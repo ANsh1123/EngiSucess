@@ -393,7 +393,27 @@ COMPANY_DATA = [
         "work_environment": "Hybrid",
         "founded_year": 2020,
         "funding_stage": "Seed",
-        "description": "Revolutionary fintech startup disrupting traditional banking with AI and blockchain"
+        "description": "Revolutionary fintech startup disrupting traditional banking with AI and blockchain",
+        "job_links": {
+            "linkedin": "https://www.linkedin.com/jobs/search/?keywords=fintech%20developer&location=mumbai",
+            "indeed": "https://www.indeed.co.in/jobs?q=fintech+developer&l=mumbai",
+            "naukri": "https://www.naukri.com/fintech-developer-jobs-in-mumbai",
+            "company_careers": "https://fintechinnovations.com/careers"
+        },
+        "active_openings": [
+            {
+                "title": "Blockchain Developer",
+                "experience": "1-3 years",
+                "apply_link": "https://www.linkedin.com/jobs/view/blockchain-developer",
+                "posted": "2 days ago"
+            },
+            {
+                "title": "Full Stack Developer - FinTech",
+                "experience": "0-2 years",
+                "apply_link": "https://www.indeed.co.in/viewjob?jk=fullstack-fintech",
+                "posted": "1 week ago"
+            }
+        ]
     },
     {
         "id": "comp_5",
