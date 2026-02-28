@@ -44,6 +44,84 @@ security = HTTPBearer()
 JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key-change-this')
 JWT_ALGORITHM = "HS256"
 
+# AI Configuration
+EMERGENT_LLM_KEY = os.getenv('EMERGENT_LLM_KEY')
+
+async def analyze_resume_with_ai(resume_text: str, user_branch: str = "Computer Science") -> dict:
+    """
+    Use Gemini 3 Flash to provide intelligent resume analysis
+    """
+    try:
+        if not EMERGENT_LLM_KEY:
+            # Fallback to keyword-based analysis if no AI key
+            return None
+        
+        # Initialize Gemini chat
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"resume-eval-{uuid.uuid4()}",
+            system_message="""You are an expert resume evaluator and career coach specializing in engineering placements. 
+Analyze resumes thoroughly and provide actionable feedback. Be encouraging but honest.
+Always respond with valid JSON only, no markdown formatting."""
+        ).with_model("gemini", "gemini-3-flash-preview")
+        
+        prompt = f"""Analyze this resume for a {user_branch} engineering student applying for tech jobs.
+
+RESUME TEXT:
+{resume_text[:4000]}
+
+Provide a comprehensive evaluation in this exact JSON format (respond with ONLY valid JSON, no markdown):
+{{
+    "overall_score": <number 0-100>,
+    "section_scores": {{
+        "contact_info": <number 0-100>,
+        "education": <number 0-100>,
+        "experience": <number 0-100>,
+        "skills": <number 0-100>,
+        "projects": <number 0-100>,
+        "achievements": <number 0-100>,
+        "formatting": <number 0-100>
+    }},
+    "ats_score": <number 0-100>,
+    "strengths": ["<strength1>", "<strength2>", "<strength3>"],
+    "improvements": ["<specific improvement1>", "<specific improvement2>", "<specific improvement3>"],
+    "missing_sections": ["<missing section if any>"],
+    "recommended_additions": ["<recommendation1>", "<recommendation2>"],
+    "detailed_feedback": {{
+        "contact_info": "<specific feedback>",
+        "education": "<specific feedback>",
+        "experience": "<specific feedback>",
+        "skills": "<specific feedback for {user_branch}>",
+        "projects": "<specific feedback>",
+        "achievements": "<specific feedback>",
+        "formatting": "<specific feedback>"
+    }},
+    "ai_summary": "<2-3 sentence personalized summary of the resume's strengths and what to focus on>"
+}}
+
+Be specific and actionable in your feedback. Consider the candidate is a {user_branch} student."""
+
+        # Send message and get response
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Parse JSON response
+        response_text = response.strip()
+        # Remove markdown code blocks if present
+        if response_text.startswith("```"):
+            response_text = response_text.split("```")[1]
+            if response_text.startswith("json"):
+                response_text = response_text[4:]
+        response_text = response_text.strip()
+        
+        analysis = json.loads(response_text)
+        analysis["ai_powered"] = True
+        return analysis
+        
+    except Exception as e:
+        print(f"AI Resume Analysis Error: {str(e)}")
+        return None
+
 # Helper functions
 def prepare_for_mongo(data):
     """Prepare data for MongoDB storage"""
