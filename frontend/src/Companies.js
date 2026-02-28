@@ -21,6 +21,8 @@ const Companies = ({ user }) => {
   useEffect(() => {
     fetchCompanies();
     fetchUserMatches();
+    fetchYoutubeRecommendations();
+    fetchMyApplications();
   }, []);
 
   const fetchCompanies = async () => {
@@ -42,6 +44,49 @@ const Companies = ({ user }) => {
       }
     } catch (error) {
       console.log('No previous matches found');
+    }
+  };
+
+  const fetchYoutubeRecommendations = async () => {
+    try {
+      const response = await axios.get(`${API}/learning/youtube-recommendations`);
+      setYoutubeRecommendations(response.data);
+    } catch (error) {
+      console.log('Failed to fetch YouTube recommendations');
+    }
+  };
+
+  const fetchMyApplications = async () => {
+    try {
+      const response = await axios.get(`${API}/applications/my-applications`);
+      setMyApplications(response.data.applications);
+    } catch (error) {
+      console.log('Failed to fetch applications');
+    }
+  };
+
+  const handleJobApplication = async (company, jobLink, platform) => {
+    try {
+      const applicationData = {
+        position: "Software Developer",
+        application_link: jobLink,
+        platform: platform,
+        notes: `Applied through ${platform}`
+      };
+      
+      await axios.post(`${API}/companies/${company.id}/apply`, applicationData);
+      
+      // Open job link in new tab
+      window.open(jobLink, '_blank');
+      
+      // Refresh applications
+      fetchMyApplications();
+      
+      alert(`Application tracked! Opening ${platform} job page...`);
+    } catch (error) {
+      console.error('Failed to track application:', error);
+      // Still open the job link even if tracking fails
+      window.open(jobLink, '_blank');
     }
   };
 
