@@ -8,6 +8,8 @@ import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
 import re
+import os
+import tempfile
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -16,6 +18,9 @@ import jwt
 import json
 import base64
 from bson import ObjectId
+import PyPDF2
+import docx
+from io import BytesIO
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
