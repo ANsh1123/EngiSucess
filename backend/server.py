@@ -1450,7 +1450,53 @@ async def get_user_company_matches(current_user: dict = Depends(get_current_user
         print(f"Error retrieving matches: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve company matches")
 
-# Dashboard Routes
+@api_router.post("/companies/{company_id}/apply")
+async def track_job_application(company_id: str, application_data: dict, current_user: dict = Depends(get_current_user)):
+    """Track job application to a company"""
+    try:
+        # Find the company
+        company = next((c for c in COMPANY_DATA if c["id"] == company_id), None)
+        if not company:
+            raise HTTPException(status_code=404, detail="Company not found")
+        
+        # Create application record
+        application = {
+            "id": str(uuid.uuid4()),
+            "user_id": current_user["id"],
+            "company_id": company_id,
+            "company_name": company["name"],
+            "position": application_data.get("position", "Software Developer"),
+            "application_link": application_data.get("application_link", ""),
+            "platform": application_data.get("platform", "Company Website"),
+            "status": "Applied",
+            "applied_date": datetime.now(timezone.utc).isoformat(),
+            "notes": application_data.get("notes", "")
+        }
+        
+        # Save to database
+        await db.job_applications.insert_one(prepare_for_mongo(application))
+        
+        return {
+            "message": "Application tracked successfully",
+            "application_id": application["id"]
+        }
+        
+    except Exception as e:
+        print(f"Error tracking application: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to track job application")
+
+@api_router.get("/applications/my-applications")
+async def get_user_applications(current_user: dict = Depends(get_current_user)):
+    """Get user's job applications"""
+    try:
+        applications = await db.job_applications.find({"user_id": current_user["id"]}).sort("applied_date", -1).to_list(50)
+        return {
+            "applications": [parse_from_mongo(app) for app in applications],
+            "total_applications": len(applications)
+        }
+    except Exception as e:
+        print(f"Error fetching applications: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch applications")
 @api_router.get("/dashboard")
 async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
     # Get recent projects
