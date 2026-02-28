@@ -546,43 +546,83 @@ COMPANY_DATA = [
 # Authentication Routes
 @api_router.post("/auth/register")
 async def register_user(user_data: UserCreate):
+    # Validate and sanitize input
+    if not validate_email(user_data.email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
+    if len(user_data.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
+    
+    # Sanitize inputs
+    email = sanitize_input(user_data.email.lower())
+    name = sanitize_input(user_data.name, 100)
+    college = sanitize_input(user_data.college, 200)
+    branch = sanitize_input(user_data.branch, 100)
+    year = sanitize_input(user_data.year, 20)
+    
     # Check if user already exists
-    existing_user = await db.users.find_one({"email": user_data.email})
+    existing_user = await db.users.find_one({"email": email})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Hash password
-    hashed_password = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
+    # Hash password with salt
+    salt = bcrypt.gensalt(rounds=12)
+    hashed_password = bcrypt.hashpw(user_data.password.encode('utf-8'), salt)
     
     # Create user
     user = User(
-        email=user_data.email,
-        name=user_data.name,
-        college=user_data.college,
-        branch=user_data.branch,
-        year=user_data.year
+        email=email,
+        name=name,
+        college=college,
+        branch=branch,
+        year=year
     )
     
     user_dict = prepare_for_mongo(user.dict())
     user_dict["password"] = hashed_password.decode('utf-8')
+    user_dict["created_at"] = datetime.now(timezone.utc).isoformat()
+    user_dict["email_verified"] = False
+    user_dict["login_attempts"] = 0
+    user_dict["last_login"] = None
     
     await db.users.insert_one(user_dict)
     
     # Create JWT token
     token = create_jwt_token(user.id)
     
+    # Update last login
+    await db.users.update_one({"id": user.id}, {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}})
+    
     return {"token": token, "user": user.dict()}
 
 @api_router.post("/auth/login")
 async def login_user(login_data: UserLogin):
+    # Validate input
+    if not validate_email(login_data.email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
+    email = sanitize_input(login_data.email.lower())
+    
     # Find user
-    user = await db.users.find_one({"email": login_data.email})
+    user = await db.users.find_one({"email": email})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    # Check for too many failed attempts (basic rate limiting)
+    if user.get("login_attempts", 0) >= 5:
+        raise HTTPException(status_code=429, detail="Too many failed login attempts. Please try again later.")
+    
     # Check password
     if not bcrypt.checkpw(login_data.password.encode('utf-8'), user["password"].encode('utf-8')):
+        # Increment failed login attempts
+        await db.users.update_one({"email": email}, {"$inc": {"login_attempts": 1}})
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Reset login attempts on successful login
+    await db.users.update_one(
+        {"email": email}, 
+        {"$set": {"login_attempts": 0, "last_login": datetime.now(timezone.utc).isoformat()}}
+    )
     
     # Create token
     token = create_jwt_token(user["id"])
