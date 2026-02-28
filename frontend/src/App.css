@@ -2559,12 +2559,50 @@ select:focus {
   margin-bottom: 32px;
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .evaluation-header h3 {
   margin: 0;
   font-size: 22px;
   color: var(--text-primary);
+}
+
+.ai-badge {
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.8); }
+}
+
+.ai-summary-box {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.ai-summary-box h4 {
+  margin: 0 0 12px 0;
+  color: #10b981;
+  font-size: 16px;
+}
+
+.ai-summary-box p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 14px;
 }
 
 .overall-score {
