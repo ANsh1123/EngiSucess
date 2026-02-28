@@ -110,11 +110,17 @@ Empower engineering students to excel in their placement journey through intelli
 - [x] Comprehensive test suite (30 tests)
 
 ## Simulated Features (No Real AI)
-Note: The following features use keyword-based algorithms, NOT real ML models:
-- Company matching scoring
-- Resume evaluation analysis
-- Interview feedback generation
+Note: The following features use keyword-based algorithms as fallback:
+- Company matching scoring (simulated)
+- Interview feedback generation (simulated)
 - YouTube recommendations (pre-configured)
+
+## AI-Powered Features (Real AI - Gemini 3 Flash)
+- **Resume Evaluator** - Uses Gemini 3 Flash for intelligent, personalized resume analysis
+  - Provides detailed section-wise scoring
+  - AI-generated summary and feedback
+  - ATS compatibility analysis
+  - Actionable improvement suggestions
 
 ## Future Enhancements (P2)
 - Real AI/ML integration for matching
