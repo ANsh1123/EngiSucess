@@ -562,6 +562,30 @@ const Companies = ({ user }) => {
                     >
                       View Full Details
                     </button>
+                    
+                    {company.job_links && (
+                      <div className="job-application-buttons">
+                        <button 
+                          className="btn-job-apply linkedin"
+                          onClick={() => handleJobApplication(company, company.job_links.linkedin, 'LinkedIn')}
+                        >
+                          Apply on LinkedIn
+                        </button>
+                        <button 
+                          className="btn-job-apply indeed"
+                          onClick={() => handleJobApplication(company, company.job_links.indeed, 'Indeed')}
+                        >
+                          Apply on Indeed
+                        </button>
+                        <button 
+                          className="btn-job-apply naukri"
+                          onClick={() => handleJobApplication(company, company.job_links.naukri, 'Naukri')}
+                        >
+                          Apply on Naukri
+                        </button>
+                      </div>
+                    )}
+                    
                     <button className="btn-secondary">
                       Save for Later
                     </button>
