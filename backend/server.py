@@ -1954,7 +1954,51 @@ async def get_resume_evaluation(evaluation_id: str, current_user: dict = Depends
         print(f"Error fetching evaluation: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch evaluation")
 
-# Basic routes
+# Security Measures and Input Validation
+
+# Rate limiting and security headers
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import hashlib
+import secrets
+
+# Add security headers
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+    return response
+
+# Input sanitization
+def sanitize_input(text: str, max_length: int = 1000) -> str:
+    """Sanitize user input to prevent XSS and injection attacks"""
+    if not text:
+        return ""
+    
+    # Remove potentially harmful characters
+    cleaned = re.sub(r'[<>"\']', '', str(text))
+    # Limit length
+    cleaned = cleaned[:max_length]
+    # Remove excessive whitespace
+    cleaned = ' '.join(cleaned.split())
+    
+    return cleaned.strip()
+
+def validate_email(email: str) -> bool:
+    """Validate email format"""
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(email_pattern, email) is not None
+
+def validate_file_type(filename: str, allowed_extensions: set) -> bool:
+    """Validate file extension"""
+    if not filename:
+        return False
+    extension = os.path.splitext(filename.lower())[1]
+    return extension in allowed_extensions
 @api_router.get("/")
 async def root():
     return {"message": "Engineering Student Success Platform API"}
