@@ -664,7 +664,155 @@ const Companies = ({ user }) => {
         </div>
       )}
 
-      {showApplications && (
+      {showResumeEvaluator && (
+        <div className="glass-card resume-evaluator">
+          <h3>📄 AI-Powered Resume Evaluator</h3>
+          <p>Upload your resume to get comprehensive AI-powered analysis and scoring for FREE!</p>
+          
+          <div className="upload-section">
+            <div className="upload-area">
+              <input
+                type="file"
+                id="resume-upload"
+                accept=".pdf,.doc,.docx"
+                onChange={handleResumeUpload}
+                disabled={resumeEvaluating}
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="resume-upload" className="upload-label">
+                <div className="upload-content">
+                  <span className="upload-icon">📎</span>
+                  <h4>Upload Your Resume</h4>
+                  <p>Supported formats: PDF, DOC, DOCX (Max 5MB)</p>
+                  <button className="btn-primary" disabled={resumeEvaluating}>
+                    {resumeEvaluating ? 'Evaluating...' : 'Choose File'}
+                  </button>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {resumeEvaluation && (
+            <div className="evaluation-results">
+              <div className="evaluation-header">
+                <h3>📊 Resume Evaluation Results</h3>
+                <div className="overall-score">
+                  <div 
+                    className="score-circle-large"
+                    style={{ 
+                      background: `conic-gradient(${getScoreColor(resumeEvaluation.overall_score)} ${resumeEvaluation.overall_score}%, #374151 0)` 
+                    }}
+                  >
+                    <span className="score-text-large">{resumeEvaluation.overall_score}%</span>
+                  </div>
+                  <span className="overall-label">Overall Score</span>
+                </div>
+              </div>
+
+              <div className="section-scores">
+                <h4>📈 Section-wise Analysis</h4>
+                <div className="scores-grid">
+                  {Object.entries(resumeEvaluation.section_scores).map(([section, score]) => (
+                    <div key={section} className="score-section">
+                      <div className="section-info">
+                        <span className="section-name">{section.replace('_', ' ').toUpperCase()}</span>
+                        <span className="section-score" style={{ color: getScoreColor(score) }}>
+                          {score}%
+                        </span>
+                      </div>
+                      <div className="section-bar">
+                        <div 
+                          className="section-fill"
+                          style={{ 
+                            width: `${score}%`,
+                            backgroundColor: getScoreColor(score)
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="feedback-sections">
+                <div className="feedback-grid">
+                  <div className="feedback-section strengths">
+                    <h4>💪 Strengths</h4>
+                    <ul>
+                      {resumeEvaluation.strengths.map((strength, index) => (
+                        <li key={index}>{strength}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="feedback-section improvements">
+                    <h4>🎯 Areas for Improvement</h4>
+                    <ul>
+                      {resumeEvaluation.improvements.map((improvement, index) => (
+                        <li key={index}>{improvement}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {resumeEvaluation.missing_sections.length > 0 && (
+                  <div className="feedback-section missing">
+                    <h4>❗ Missing Sections</h4>
+                    <div className="missing-tags">
+                      {resumeEvaluation.missing_sections.map((section, index) => (
+                        <span key={index} className="missing-tag">{section}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {resumeEvaluation.recommended_additions.length > 0 && (
+                  <div className="feedback-section recommendations">
+                    <h4>💡 Recommended Additions</h4>
+                    <div className="recommendation-tags">
+                      {resumeEvaluation.recommended_additions.map((addition, index) => (
+                        <span key={index} className="recommendation-tag">{addition}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="ats-score">
+                  <h4>🤖 ATS Compatibility Score</h4>
+                  <div className="ats-info">
+                    <div className="ats-score-display">
+                      <span className="ats-percentage" style={{ color: getScoreColor(resumeEvaluation.ats_score) }}>
+                        {resumeEvaluation.ats_score}%
+                      </span>
+                      <span className="ats-label">ATS Friendly</span>
+                    </div>
+                    <p className="ats-description">
+                      {resumeEvaluation.ats_score >= 80 
+                        ? "Excellent! Your resume is highly compatible with Applicant Tracking Systems."
+                        : resumeEvaluation.ats_score >= 60
+                        ? "Good ATS compatibility. Minor improvements recommended."
+                        : "Needs improvement for better ATS compatibility."
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="evaluation-actions">
+                <button 
+                  className="btn-primary"
+                  onClick={() => setResumeEvaluation(null)}
+                >
+                  Evaluate Another Resume
+                </button>
+                <button className="btn-secondary">
+                  Download Detailed Report
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
         <div className="glass-card applications-section">
           <h3>📋 My Job Applications</h3>
           {myApplications.length > 0 ? (
