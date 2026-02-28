@@ -813,6 +813,8 @@ const Companies = ({ user }) => {
           )}
         </div>
       )}
+
+      {showApplications && (
         <div className="glass-card applications-section">
           <h3>📋 My Job Applications</h3>
           {myApplications.length > 0 ? (
