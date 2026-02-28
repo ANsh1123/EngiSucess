@@ -306,7 +306,27 @@ COMPANY_DATA = [
         "work_environment": "Office",
         "founded_year": 2008,
         "funding_stage": "Public",
-        "description": "Global IT services provider delivering digital transformation solutions"
+        "description": "Global IT services provider delivering digital transformation solutions",
+        "job_links": {
+            "linkedin": "https://www.linkedin.com/jobs/search/?keywords=software%20engineer&location=chennai",
+            "indeed": "https://www.indeed.co.in/jobs?q=software+engineer&l=chennai",
+            "naukri": "https://www.naukri.com/software-engineer-jobs-in-chennai",
+            "company_careers": "https://innovateit.com/careers"
+        },
+        "active_openings": [
+            {
+                "title": "Associate Software Engineer",
+                "experience": "0-1 years",
+                "apply_link": "https://www.naukri.com/job-listings/associate-software-engineer",
+                "posted": "3 days ago"
+            },
+            {
+                "title": "Graduate Trainee - IT",
+                "experience": "Fresher",
+                "apply_link": "https://www.linkedin.com/jobs/view/graduate-trainee-it",
+                "posted": "5 days ago"
+            }
+        ]
     },
     {
         "id": "comp_3",
