@@ -1817,6 +1817,103 @@ async def import_linkedin_data(linkedin_data: dict, current_user: dict = Depends
     
     return {"message": "LinkedIn data imported successfully"}
 
+# Resume Evaluation Routes
+@api_router.post("/resume/evaluate")
+async def evaluate_resume(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """
+    Upload and evaluate resume with AI-powered analysis
+    """
+    try:
+        # Validate file type
+        allowed_extensions = {'.pdf', '.docx', '.doc'}
+        file_extension = os.path.splitext(file.filename.lower())[1]
+        
+        if file_extension not in allowed_extensions:
+            raise HTTPException(status_code=400, detail="Only PDF, DOC, and DOCX files are allowed")
+        
+        # Validate file size (max 5MB)
+        if file.size > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File size must be less than 5MB")
+        
+        # Read file content
+        file_content = await file.read()
+        
+        # Extract text based on file type
+        resume_text = ""
+        if file_extension == '.pdf':
+            resume_text = extract_text_from_pdf(file_content)
+        elif file_extension in ['.docx', '.doc']:
+            resume_text = extract_text_from_docx(file_content)
+        
+        if not resume_text:
+            raise HTTPException(status_code=400, detail="Could not extract text from resume. Please check file format.")
+        
+        # Get user branch for personalized analysis
+        user_branch = current_user.get("branch", "Computer Science")
+        
+        # Analyze resume
+        analysis = analyze_resume_content(resume_text, user_branch)
+        
+        # Store evaluation in database
+        evaluation_record = {
+            "id": str(uuid.uuid4()),
+            "user_id": current_user["id"],
+            "filename": file.filename,
+            "file_size": file.size,
+            "analysis": analysis,
+            "resume_text": resume_text[:1000],  # Store first 1000 chars for reference
+            "evaluated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.resume_evaluations.insert_one(prepare_for_mongo(evaluation_record))
+        
+        return {
+            "message": "Resume evaluated successfully",
+            "evaluation_id": evaluation_record["id"],
+            "analysis": analysis
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error evaluating resume: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to evaluate resume")
+
+@api_router.get("/resume/my-evaluations")
+async def get_user_resume_evaluations(current_user: dict = Depends(get_current_user)):
+    """Get user's resume evaluation history"""
+    try:
+        evaluations = await db.resume_evaluations.find(
+            {"user_id": current_user["id"]}
+        ).sort("evaluated_at", -1).limit(10).to_list(10)
+        
+        return {
+            "evaluations": [parse_from_mongo(eval) for eval in evaluations],
+            "total_evaluations": len(evaluations)
+        }
+    except Exception as e:
+        print(f"Error fetching evaluations: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch resume evaluations")
+
+@api_router.get("/resume/evaluation/{evaluation_id}")
+async def get_resume_evaluation(evaluation_id: str, current_user: dict = Depends(get_current_user)):
+    """Get specific resume evaluation details"""
+    try:
+        evaluation = await db.resume_evaluations.find_one({
+            "id": evaluation_id,
+            "user_id": current_user["id"]
+        })
+        
+        if not evaluation:
+            raise HTTPException(status_code=404, detail="Evaluation not found")
+        
+        return parse_from_mongo(evaluation)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error fetching evaluation: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch evaluation")
+
 # Basic routes
 @api_router.get("/")
 async def root():
