@@ -68,6 +68,31 @@ const Companies = ({ user }) => {
     }
   };
 
+  const handleJobApplication = async (company, jobLink, platform) => {
+    try {
+      const applicationData = {
+        position: "Software Developer",
+        application_link: jobLink,
+        platform: platform,
+        notes: `Applied through ${platform}`
+      };
+      
+      await axios.post(`${API}/companies/${company.id}/apply`, applicationData);
+      
+      // Open job link in new tab
+      window.open(jobLink, '_blank');
+      
+      // Refresh applications
+      fetchMyApplications();
+      
+      alert(`Application tracked! Opening ${platform} job page...`);
+    } catch (error) {
+      console.error('Failed to track application:', error);
+      // Still open the job link even if tracking fails
+      window.open(jobLink, '_blank');
+    }
+  };
+
   const handleResumeUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
