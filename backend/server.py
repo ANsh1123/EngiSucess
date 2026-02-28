@@ -352,7 +352,27 @@ COMPANY_DATA = [
         "work_environment": "Remote-First",
         "founded_year": 2018,
         "funding_stage": "Series A",
-        "description": "AI-first company building next-generation analytics and machine learning platforms"
+        "description": "AI-first company building next-generation analytics and machine learning platforms",
+        "job_links": {
+            "linkedin": "https://www.linkedin.com/jobs/search/?keywords=data%20scientist&location=bangalore",
+            "indeed": "https://www.indeed.co.in/jobs?q=data+scientist&l=bangalore",
+            "naukri": "https://www.naukri.com/data-scientist-jobs-in-bangalore",
+            "company_careers": "https://dataflow.ai/careers"
+        },
+        "active_openings": [
+            {
+                "title": "Junior Data Scientist",
+                "experience": "0-2 years",
+                "apply_link": "https://www.linkedin.com/jobs/view/junior-data-scientist",
+                "posted": "1 day ago"
+            },
+            {
+                "title": "ML Engineer Intern",
+                "experience": "Fresher",
+                "apply_link": "https://www.naukri.com/job-listings/ml-engineer-intern",
+                "posted": "4 days ago"
+            }
+        ]
     },
     {
         "id": "comp_4",
