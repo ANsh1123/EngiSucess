@@ -2014,8 +2014,13 @@ async def evaluate_resume(file: UploadFile = File(...), current_user: dict = Dep
         # Get user branch for personalized analysis
         user_branch = current_user.get("branch", "Computer Science")
         
-        # Analyze resume
-        analysis = analyze_resume_content(resume_text, user_branch)
+        # Try AI-powered analysis first, fallback to keyword-based
+        analysis = await analyze_resume_with_ai(resume_text, user_branch)
+        
+        if not analysis:
+            # Fallback to keyword-based analysis
+            analysis = analyze_resume_content(resume_text, user_branch)
+            analysis["ai_powered"] = False
         
         # Store evaluation in database
         evaluation_record = {
