@@ -708,13 +708,156 @@ async def submit_interview_response(session_id: str, response_data: dict, curren
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    # Add response
+    # Get the question and answer
+    question = response_data.get("question", "")
+    answer = response_data.get("answer", "")
+    
+    # Generate AI feedback
+    feedback = analyze_interview_response(question, answer, session["type"])
+    
+    # Prepare response with feedback
+    response_with_feedback = {
+        **response_data,
+        "feedback": feedback,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Add response to session
     await db.interview_sessions.update_one(
         {"id": session_id},
-        {"$push": {"responses": response_data}}
+        {"$push": {"responses": response_with_feedback}}
     )
     
-    return {"message": "Response submitted"}
+    return {
+        "message": "Response submitted with AI feedback",
+        "feedback": feedback
+    }
+
+@api_router.get("/interview/{session_id}/feedback")
+async def get_interview_feedback(session_id: str, current_user: dict = Depends(get_current_user)):
+    """Get comprehensive feedback for completed interview session"""
+    session = await db.interview_sessions.find_one({"id": session_id, "user_id": current_user["id"]})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    session_data = parse_from_mongo(session)
+    responses = session_data.get("responses", [])
+    
+    if not responses:
+        raise HTTPException(status_code=400, detail="No responses found for feedback")
+    
+    # Calculate overall session metrics
+    total_score = sum(r.get("feedback", {}).get("overall_score", 0) for r in responses)
+    avg_score = total_score / len(responses) if responses else 0
+    
+    total_communication = sum(r.get("feedback", {}).get("communication_score", 0) for r in responses)
+    avg_communication = total_communication / len(responses) if responses else 0
+    
+    total_content = sum(r.get("feedback", {}).get("content_score", 0) for r in responses)
+    avg_content = total_content / len(responses) if responses else 0
+    
+    total_confidence = sum(r.get("feedback", {}).get("confidence_score", 0) for r in responses)
+    avg_confidence = total_confidence / len(responses) if responses else 0
+    
+    # Collect all strengths and improvements
+    all_strengths = []
+    all_improvements = []
+    
+    for response in responses:
+        feedback = response.get("feedback", {})
+        all_strengths.extend(feedback.get("strengths", []))
+        all_improvements.extend(feedback.get("improvements", []))
+    
+    # Remove duplicates and get top items
+    unique_strengths = list(set(all_strengths))[:5]
+    unique_improvements = list(set(all_improvements))[:5]
+    
+    # Generate overall performance level
+    if avg_score >= 80:
+        performance_level = "Excellent"
+        recommendation = "You're well-prepared! Focus on maintaining confidence and continue practicing."
+    elif avg_score >= 65:
+        performance_level = "Good"
+        recommendation = "You're on the right track. Work on the improvement areas to reach excellence."
+    elif avg_score >= 50:
+        performance_level = "Average"
+        recommendation = "Significant improvement needed. Practice more structured answers with examples."
+    else:
+        performance_level = "Needs Improvement"
+        recommendation = "Focus on fundamental interview skills. Practice basic questions and build confidence."
+    
+    return {
+        "session_summary": {
+            "type": session_data.get("type"),
+            "total_questions": len(responses),
+            "overall_score": round(avg_score, 1),
+            "performance_level": performance_level
+        },
+        "detailed_scores": {
+            "communication": round(avg_communication, 1),
+            "content": round(avg_content, 1),
+            "confidence": round(avg_confidence, 1)
+        },
+        "strengths": unique_strengths,
+        "improvements": unique_improvements,
+        "recommendation": recommendation,
+        "individual_responses": responses
+    }
+
+@api_router.get("/learning/youtube-recommendations")
+async def get_youtube_recommendations(current_user: dict = Depends(get_current_user)):
+    """Get personalized YouTube learning recommendations"""
+    try:
+        # Get user's LinkedIn data for analysis
+        user_profile = current_user
+        user_skills = []
+        user_branch = user_profile.get("branch", "Computer Science")
+        
+        # Try to get skills from saved LinkedIn data
+        match_record = await db.company_matches.find_one({"user_id": current_user["id"]})
+        if match_record:
+            linkedin_data = match_record.get("linkedin_data", {})
+            user_skills = linkedin_data.get("skills", [])
+        
+        # Fallback to basic skills if no LinkedIn data
+        if not user_skills:
+            branch_skills = {
+                "Computer Science": ["Python", "JavaScript", "React", "Data Structures"],
+                "Information Technology": ["Networking", "Cybersecurity", "Database Management"],
+                "Electronics": ["Arduino", "IoT", "Embedded Systems"],
+                "Mechanical": ["SolidWorks", "CAD", "Manufacturing"],
+                "Electrical": ["MATLAB", "Power Systems", "Control Systems"],
+                "Civil": ["AutoCAD", "Structural Design", "Project Management"]
+            }
+            user_skills = branch_skills.get(user_branch, ["Programming", "Problem Solving"])
+        
+        # Get recent interview feedback to identify weak areas
+        weak_areas = []
+        recent_interviews = await db.interview_sessions.find(
+            {"user_id": current_user["id"]}
+        ).sort("created_at", -1).limit(3).to_list(3)
+        
+        for interview in recent_interviews:
+            for response in interview.get("responses", []):
+                feedback = response.get("feedback", {})
+                weak_areas.extend(feedback.get("improvements", []))
+        
+        # Generate recommendations
+        recommendations = generate_youtube_recommendations(user_skills, user_branch, weak_areas[:3])
+        
+        return {
+            "user_profile": {
+                "branch": user_branch,
+                "skills": user_skills[:8],
+                "identified_weak_areas": list(set(weak_areas[:5]))
+            },
+            "recommendations": recommendations,
+            "total_categories": len(recommendations)
+        }
+        
+    except Exception as e:
+        print(f"Error generating recommendations: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate learning recommendations")
 
 # AI-Powered Interview Feedback and YouTube Resource Recommendations
 
