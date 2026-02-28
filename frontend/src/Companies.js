@@ -592,6 +592,76 @@ const Companies = ({ user }) => {
         </div>
       )}
 
+      {showApplications && (
+        <div className="glass-card applications-section">
+          <h3>📋 My Job Applications</h3>
+          {myApplications.length > 0 ? (
+            <div className="applications-list">
+              {myApplications.map((app, index) => (
+                <div key={app.id} className="application-item">
+                  <div className="application-header">
+                    <h4>{app.position} at {app.company_name}</h4>
+                    <span className={`status-badge ${app.status.toLowerCase()}`}>
+                      {app.status}
+                    </span>
+                  </div>
+                  <div className="application-details">
+                    <p>Platform: {app.platform}</p>
+                    <p>Applied: {new Date(app.applied_date).toLocaleDateString()}</p>
+                    {app.notes && <p>Notes: {app.notes}</p>}
+                    {app.application_link && (
+                      <a href={app.application_link} target="_blank" rel="noopener noreferrer" className="btn-small">
+                        View Application
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-applications">
+              <p>No applications yet. Start applying to companies to track them here!</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {showLearningResources && youtubeRecommendations && (
+        <div className="glass-card learning-resources">
+          <h3>📚 Personalized Learning Resources</h3>
+          <div className="user-analysis">
+            <p><strong>Your Branch:</strong> {youtubeRecommendations.user_profile.branch}</p>
+            <p><strong>Skills:</strong> {youtubeRecommendations.user_profile.skills.join(', ')}</p>
+            {youtubeRecommendations.user_profile.identified_weak_areas.length > 0 && (
+              <p><strong>Areas for Improvement:</strong> {youtubeRecommendations.user_profile.identified_weak_areas.join(', ')}</p>
+            )}
+          </div>
+          
+          <div className="recommendations-grid">
+            {youtubeRecommendations.recommendations.map((category, index) => (
+              <div key={index} className={`recommendation-category ${category.priority}`}>
+                <h4>{category.category}</h4>
+                <div className="resources-list">
+                  {category.resources.map((resource, resIndex) => (
+                    <div key={resIndex} className="resource-item">
+                      <a 
+                        href={resource.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="resource-link"
+                      >
+                        <span className="resource-title">{resource.title || resource.name}</span>
+                        {resource.duration && <span className="resource-duration">{resource.duration}</span>}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {selectedCompany && (
         <CompanyDetailsModal 
           company={selectedCompany} 
