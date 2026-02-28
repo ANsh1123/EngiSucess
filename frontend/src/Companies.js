@@ -13,6 +13,10 @@ const Companies = ({ user }) => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [youtubeRecommendations, setYoutubeRecommendations] = useState(null);
+  const [showLearningResources, setShowLearningResources] = useState(false);
+  const [myApplications, setMyApplications] = useState([]);
+  const [showApplications, setShowApplications] = useState(false);
 
   useEffect(() => {
     fetchCompanies();
