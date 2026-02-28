@@ -864,7 +864,280 @@ async def get_youtube_recommendations(current_user: dict = Depends(get_current_u
         print(f"Error generating recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate learning recommendations")
 
-# AI-Powered Interview Feedback and YouTube Resource Recommendations
+# Resume Evaluation and Analysis System
+
+def extract_text_from_pdf(file_content):
+    """Extract text from PDF resume"""
+    try:
+        pdf_file = BytesIO(file_content)
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        text = ""
+        for page in pdf_reader.pages:
+            text += page.extract_text() + "\n"
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting PDF text: {e}")
+        return ""
+
+def extract_text_from_docx(file_content):
+    """Extract text from DOCX resume"""
+    try:
+        doc_file = BytesIO(file_content)
+        doc = docx.Document(doc_file)
+        text = ""
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + "\n"
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting DOCX text: {e}")
+        return ""
+
+def analyze_resume_content(resume_text, user_branch="Computer Science"):
+    """
+    Comprehensive AI-powered resume analysis and scoring
+    """
+    analysis = {
+        "overall_score": 0,
+        "section_scores": {
+            "contact_info": 0,
+            "education": 0,
+            "experience": 0,
+            "skills": 0,
+            "projects": 0,
+            "achievements": 0,
+            "formatting": 0
+        },
+        "strengths": [],
+        "improvements": [],
+        "missing_sections": [],
+        "detailed_feedback": {},
+        "recommended_additions": [],
+        "ats_score": 0
+    }
+    
+    if not resume_text or len(resume_text.strip()) < 100:
+        analysis.update({
+            "overall_score": 10,
+            "improvements": ["Resume appears to be too short or empty", "Add comprehensive content to all sections"],
+            "missing_sections": ["Contact Information", "Education", "Experience", "Skills", "Projects"]
+        })
+        return analysis
+    
+    text_lower = resume_text.lower()
+    lines = resume_text.split('\n')
+    
+    # 1. Contact Information Analysis
+    contact_score = 0
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    phone_pattern = r'(\+\d{1,3}[- ]?)?\d{10}|\(\d{3}\)\s?\d{3}-?\d{4}|\d{3}-\d{3}-\d{4}'
+    
+    if re.search(email_pattern, resume_text):
+        contact_score += 30
+    if re.search(phone_pattern, resume_text):
+        contact_score += 25
+    if any(word in text_lower for word in ['linkedin', 'github', 'portfolio']):
+        contact_score += 25
+    if any(word in text_lower for word in ['address', 'location', 'city']):
+        contact_score += 20
+    
+    analysis["section_scores"]["contact_info"] = min(100, contact_score)
+    
+    # 2. Education Analysis
+    education_score = 0
+    education_keywords = ['education', 'degree', 'bachelor', 'b.tech', 'b.e', 'university', 'college', 'gpa', 'cgpa']
+    education_found = sum(1 for keyword in education_keywords if keyword in text_lower)
+    
+    if education_found >= 3:
+        education_score = 90
+    elif education_found >= 2:
+        education_score = 70
+    elif education_found >= 1:
+        education_score = 50
+    
+    # Check for relevant coursework
+    if any(word in text_lower for word in ['coursework', 'relevant courses', 'subjects']):
+        education_score += 10
+    
+    analysis["section_scores"]["education"] = min(100, education_score)
+    
+    # 3. Experience Analysis
+    experience_score = 0
+    experience_keywords = ['experience', 'intern', 'work', 'job', 'position', 'role', 'responsibilities', 'achieved']
+    experience_found = sum(1 for keyword in experience_keywords if keyword in text_lower)
+    
+    # Check for action verbs
+    action_verbs = ['developed', 'created', 'implemented', 'designed', 'built', 'managed', 'led', 'improved', 
+                   'optimized', 'collaborated', 'delivered', 'achieved', 'reduced', 'increased']
+    action_verbs_found = sum(1 for verb in action_verbs if verb in text_lower)
+    
+    if experience_found >= 4 and action_verbs_found >= 3:
+        experience_score = 95
+    elif experience_found >= 3 and action_verbs_found >= 2:
+        experience_score = 80
+    elif experience_found >= 2:
+        experience_score = 60
+    elif experience_found >= 1:
+        experience_score = 40
+    
+    analysis["section_scores"]["experience"] = experience_score
+    
+    # 4. Skills Analysis
+    skills_score = 0
+    
+    # Branch-specific technical skills
+    branch_skills = {
+        "Computer Science": ['python', 'java', 'javascript', 'c++', 'react', 'node.js', 'sql', 'git', 'algorithms', 'data structures'],
+        "Information Technology": ['networking', 'database', 'sql', 'cybersecurity', 'cloud', 'linux', 'windows', 'troubleshooting'],
+        "Electronics": ['arduino', 'raspberry pi', 'matlab', 'verilog', 'pcb design', 'embedded systems', 'sensors'],
+        "Mechanical": ['solidworks', 'autocad', 'catia', 'ansys', 'manufacturing', 'cad', 'simulation'],
+        "Electrical": ['matlab', 'simulink', 'power systems', 'control systems', 'plc', 'scada'],
+        "Civil": ['autocad', 'staad pro', 'etabs', 'revit', 'project management', 'surveying']
+    }
+    
+    relevant_skills = branch_skills.get(user_branch, branch_skills["Computer Science"])
+    skills_found = sum(1 for skill in relevant_skills if skill in text_lower)
+    
+    # General technical skills
+    general_tech_skills = ['programming', 'software', 'development', 'coding', 'technical', 'analytical']
+    general_skills_found = sum(1 for skill in general_tech_skills if skill in text_lower)
+    
+    skills_score = (skills_found * 8) + (general_skills_found * 5)
+    analysis["section_scores"]["skills"] = min(100, skills_score)
+    
+    # 5. Projects Analysis
+    projects_score = 0
+    project_keywords = ['project', 'developed', 'built', 'created', 'implemented', 'github', 'demo', 'portfolio']
+    projects_found = sum(1 for keyword in project_keywords if keyword in text_lower)
+    
+    # Check for project impact/metrics
+    metrics_keywords = ['users', 'performance', 'efficiency', 'time', 'cost', 'revenue', '%', 'improved']
+    metrics_found = sum(1 for metric in metrics_keywords if metric in text_lower)
+    
+    if projects_found >= 4 and metrics_found >= 2:
+        projects_score = 95
+    elif projects_found >= 3:
+        projects_score = 80
+    elif projects_found >= 2:
+        projects_score = 60
+    elif projects_found >= 1:
+        projects_score = 40
+    
+    analysis["section_scores"]["projects"] = projects_score
+    
+    # 6. Achievements Analysis
+    achievements_score = 0
+    achievement_keywords = ['award', 'achievement', 'recognition', 'certificate', 'honor', 'dean', 'scholarship', 
+                          'competition', 'winner', 'first', 'best', 'top', 'excellence']
+    achievements_found = sum(1 for keyword in achievement_keywords if keyword in text_lower)
+    
+    if achievements_found >= 3:
+        achievements_score = 90
+    elif achievements_found >= 2:
+        achievements_score = 70
+    elif achievements_found >= 1:
+        achievements_score = 50
+    
+    analysis["section_scores"]["achievements"] = achievements_score
+    
+    # 7. Formatting and ATS Analysis
+    formatting_score = 70  # Base score
+    
+    # Check word count (ideal: 300-600 words)
+    word_count = len(resume_text.split())
+    if 300 <= word_count <= 600:
+        formatting_score += 20
+    elif 200 <= word_count <= 800:
+        formatting_score += 10
+    
+    # Check for proper structure
+    section_headers = ['education', 'experience', 'skills', 'projects']
+    headers_found = sum(1 for header in section_headers if header in text_lower)
+    formatting_score += headers_found * 5
+    
+    analysis["section_scores"]["formatting"] = min(100, formatting_score)
+    analysis["ats_score"] = formatting_score  # ATS compatibility score
+    
+    # Calculate Overall Score
+    scores = list(analysis["section_scores"].values())
+    overall_score = sum(scores) / len(scores)
+    analysis["overall_score"] = round(overall_score, 1)
+    
+    # Generate Feedback
+    strengths = []
+    improvements = []
+    missing_sections = []
+    recommended_additions = []
+    
+    # Analyze strengths
+    if analysis["section_scores"]["contact_info"] >= 80:
+        strengths.append("Complete contact information provided")
+    if analysis["section_scores"]["education"] >= 80:
+        strengths.append("Strong educational background clearly presented")
+    if analysis["section_scores"]["experience"] >= 70:
+        strengths.append("Good work experience with action verbs")
+    if analysis["section_scores"]["skills"] >= 70:
+        strengths.append("Relevant technical skills highlighted")
+    if analysis["section_scores"]["projects"] >= 70:
+        strengths.append("Projects demonstrate practical application")
+    if analysis["section_scores"]["achievements"] >= 60:
+        strengths.append("Notable achievements and recognitions")
+    
+    # Identify improvements
+    if analysis["section_scores"]["contact_info"] < 60:
+        improvements.append("Add complete contact information (email, phone, LinkedIn, GitHub)")
+        missing_sections.append("Complete Contact Information")
+    
+    if analysis["section_scores"]["education"] < 60:
+        improvements.append("Provide detailed education information with GPA/CGPA")
+        missing_sections.append("Education Details")
+    
+    if analysis["section_scores"]["experience"] < 50:
+        improvements.append("Add more work experience with quantifiable achievements")
+        missing_sections.append("Professional Experience")
+    
+    if analysis["section_scores"]["skills"] < 60:
+        improvements.append(f"Add more {user_branch}-relevant technical skills")
+        missing_sections.append("Technical Skills")
+    
+    if analysis["section_scores"]["projects"] < 50:
+        improvements.append("Include more projects with impact metrics")
+        missing_sections.append("Projects Section")
+    
+    if analysis["section_scores"]["achievements"] < 40:
+        improvements.append("Add achievements, awards, or certifications")
+        recommended_additions.append("Certifications and Awards")
+    
+    if word_count < 200:
+        improvements.append("Expand resume content - too brief for comprehensive evaluation")
+    elif word_count > 800:
+        improvements.append("Consider condensing content for better readability")
+    
+    # Recommended additions based on branch
+    if user_branch == "Computer Science":
+        recommended_additions.extend(["GitHub portfolio link", "Coding competition participation", "Open source contributions"])
+    elif user_branch == "Information Technology":
+        recommended_additions.extend(["IT certifications", "Network administration experience", "Troubleshooting examples"])
+    
+    # Detailed feedback for each section
+    detailed_feedback = {
+        "contact_info": "Ensure all contact methods are professional and up-to-date",
+        "education": "Include GPA if above 3.0, relevant coursework, and academic projects",
+        "experience": "Use action verbs and quantify achievements with specific metrics",
+        "skills": f"Focus on {user_branch}-specific technical skills and tools",
+        "projects": "Describe project impact, technologies used, and your specific contributions",
+        "achievements": "Include academic honors, competitions, and professional recognitions",
+        "formatting": "Maintain consistent formatting and ensure ATS compatibility"
+    }
+    
+    analysis.update({
+        "strengths": strengths,
+        "improvements": improvements,
+        "missing_sections": missing_sections,
+        "recommended_additions": recommended_additions,
+        "detailed_feedback": detailed_feedback
+    })
+    
+    return analysis
 
 def analyze_interview_response(question, answer, interview_type):
     """
