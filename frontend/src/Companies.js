@@ -336,6 +336,12 @@ const Companies = ({ user }) => {
         <div className="header-actions">
           <button 
             className="btn-secondary"
+            onClick={() => setShowResumeEvaluator(!showResumeEvaluator)}
+          >
+            📄 Resume Evaluator
+          </button>
+          <button 
+            className="btn-secondary"
             onClick={() => setShowApplications(!showApplications)}
           >
             📋 My Applications ({myApplications.length})
