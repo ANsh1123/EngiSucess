@@ -68,28 +68,42 @@ const Companies = ({ user }) => {
     }
   };
 
-  const handleJobApplication = async (company, jobLink, platform) => {
+  const handleResumeUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload only PDF, DOC, or DOCX files');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    setResumeEvaluating(true);
     try {
-      const applicationData = {
-        position: "Software Developer",
-        application_link: jobLink,
-        platform: platform,
-        notes: `Applied through ${platform}`
-      };
-      
-      await axios.post(`${API}/companies/${company.id}/apply`, applicationData);
-      
-      // Open job link in new tab
-      window.open(jobLink, '_blank');
-      
-      // Refresh applications
-      fetchMyApplications();
-      
-      alert(`Application tracked! Opening ${platform} job page...`);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(`${API}/resume/evaluate`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setResumeEvaluation(response.data.analysis);
     } catch (error) {
-      console.error('Failed to track application:', error);
-      // Still open the job link even if tracking fails
-      window.open(jobLink, '_blank');
+      console.error('Failed to evaluate resume:', error);
+      alert('Failed to evaluate resume. Please try again.');
+    } finally {
+      setResumeEvaluating(false);
+      // Reset file input
+      event.target.value = '';
     }
   };
 
