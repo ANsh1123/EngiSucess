@@ -2489,7 +2489,338 @@ select:focus {
   color: var(--glow-primary);
 }
 
-/* Enhanced Header Actions */
+/* Resume Evaluator */
+.resume-evaluator {
+  margin-bottom: 32px;
+  animation: slideInUp 0.6s ease;
+}
+
+.upload-section {
+  margin: 24px 0;
+}
+
+.upload-area {
+  border: 2px dashed rgba(59, 130, 246, 0.3);
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.05);
+  transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.upload-label {
+  display: block;
+  cursor: pointer;
+  padding: 40px 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.upload-content h4 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.upload-content p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Evaluation Results */
+.evaluation-results {
+  margin-top: 32px;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.evaluation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.evaluation-header h3 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--text-primary);
+}
+
+.overall-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-circle-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.score-circle-large::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.score-text-large {
+  position: relative;
+  z-index: 1;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.overall-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Section Scores */
+.section-scores {
+  margin-bottom: 32px;
+}
+
+.section-scores h4 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.score-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.section-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-score {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.section-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.section-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+
+/* Feedback Sections */
+.feedback-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.feedback-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.feedback-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.feedback-section.strengths {
+  border-left: 4px solid var(--success);
+}
+
+.feedback-section.improvements {
+  border-left: 4px solid var(--warning);
+}
+
+.feedback-section.missing {
+  border-left: 4px solid var(--error);
+}
+
+.feedback-section.recommendations {
+  border-left: 4px solid var(--glow-primary);
+}
+
+.feedback-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feedback-section li {
+  padding: 8px 0;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  padding-left: 20px;
+}
+
+.feedback-section li:last-child {
+  border-bottom: none;
+}
+
+.feedback-section.strengths li::before {
+  content: '✅';
+  position: absolute;
+  left: 0;
+  top: 8px;
+}
+
+.feedback-section.improvements li::before {
+  content: '💡';
+  position: absolute;
+  left: 0;
+  top: 8px;
+}
+
+/* Missing and Recommendation Tags */
+.missing-tags,
+.recommendation-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.missing-tag {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--error);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.recommendation-tag {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--glow-primary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* ATS Score */
+.ats-score {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid var(--glow-accent);
+}
+
+.ats-score h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.ats-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ats-score-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ats-percentage {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.ats-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.ats-description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Evaluation Actions */
+.evaluation-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
 .header-actions {
   display: flex;
   align-items: center;
