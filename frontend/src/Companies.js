@@ -17,6 +17,9 @@ const Companies = ({ user }) => {
   const [showLearningResources, setShowLearningResources] = useState(false);
   const [myApplications, setMyApplications] = useState([]);
   const [showApplications, setShowApplications] = useState(false);
+  const [showResumeEvaluator, setShowResumeEvaluator] = useState(false);
+  const [resumeEvaluation, setResumeEvaluation] = useState(null);
+  const [resumeEvaluating, setResumeEvaluating] = useState(false);
 
   useEffect(() => {
     fetchCompanies();
