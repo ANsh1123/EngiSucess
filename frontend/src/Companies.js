@@ -696,6 +696,9 @@ const Companies = ({ user }) => {
             <div className="evaluation-results">
               <div className="evaluation-header">
                 <h3>📊 Resume Evaluation Results</h3>
+                {resumeEvaluation.ai_powered && (
+                  <span className="ai-badge">🤖 AI-Powered by Gemini</span>
+                )}
                 <div className="overall-score">
                   <div 
                     className="score-circle-large"
@@ -708,6 +711,13 @@ const Companies = ({ user }) => {
                   <span className="overall-label">Overall Score</span>
                 </div>
               </div>
+
+              {resumeEvaluation.ai_summary && (
+                <div className="ai-summary-box">
+                  <h4>🧠 AI Summary</h4>
+                  <p>{resumeEvaluation.ai_summary}</p>
+                </div>
+              )}
 
               <div className="section-scores">
                 <h4>📈 Section-wise Analysis</h4>
