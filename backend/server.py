@@ -716,7 +716,297 @@ async def submit_interview_response(session_id: str, response_data: dict, curren
     
     return {"message": "Response submitted"}
 
-# AI-Powered Company Matching Functions
+# AI-Powered Interview Feedback and YouTube Resource Recommendations
+
+def analyze_interview_response(question, answer, interview_type):
+    """
+    Analyze interview response and provide detailed feedback
+    """
+    feedback = {
+        "overall_score": 0,
+        "strengths": [],
+        "improvements": [],
+        "detailed_feedback": "",
+        "communication_score": 0,
+        "content_score": 0,
+        "confidence_score": 0
+    }
+    
+    if not answer or len(answer.strip()) < 10:
+        feedback.update({
+            "overall_score": 20,
+            "detailed_feedback": "Response too brief. Provide more detailed answers with examples.",
+            "improvements": ["Elaborate more on your answer", "Include specific examples", "Show enthusiasm"],
+            "communication_score": 20,
+            "content_score": 10,
+            "confidence_score": 30
+        })
+        return feedback
+    
+    answer_lower = answer.lower()
+    word_count = len(answer.split())
+    
+    # Content Analysis
+    content_score = 50  # Base score
+    
+    # Check for specific keywords based on interview type
+    if interview_type == "hr":
+        positive_keywords = [
+            "experience", "team", "project", "challenge", "learn", "growth", 
+            "passion", "goal", "achievement", "collaboration", "leadership",
+            "problem-solving", "dedication", "opportunity", "contribute"
+        ]
+        technical_keywords = ["skills", "technical", "programming", "development"]
+        
+        # Boost score for HR-relevant content
+        for keyword in positive_keywords:
+            if keyword in answer_lower:
+                content_score += 5
+                
+    elif interview_type == "technical":
+        technical_keywords = [
+            "algorithm", "data structure", "programming", "code", "development",
+            "framework", "database", "api", "testing", "optimization", "design pattern",
+            "architecture", "scalability", "performance", "debugging", "version control"
+        ]
+        
+        # Boost score for technical content
+        for keyword in technical_keywords:
+            if keyword in answer_lower:
+                content_score += 6
+    
+    # Communication Analysis
+    communication_score = 60  # Base score
+    
+    # Word count analysis
+    if 50 <= word_count <= 200:
+        communication_score += 20
+    elif 20 <= word_count < 50:
+        communication_score += 10
+    elif word_count > 200:
+        communication_score += 5
+    
+    # Check for structured response
+    structure_indicators = ["first", "second", "finally", "because", "however", "therefore", "for example"]
+    for indicator in structure_indicators:
+        if indicator in answer_lower:
+            communication_score += 5
+            break
+    
+    # Confidence Analysis
+    confidence_score = 55  # Base score
+    
+    # Positive confidence indicators
+    confidence_boosters = ["confident", "believe", "experienced", "skilled", "capable", "successful"]
+    uncertainty_words = ["maybe", "perhaps", "not sure", "i think", "probably", "might"]
+    
+    for booster in confidence_boosters:
+        if booster in answer_lower:
+            confidence_score += 8
+    
+    for uncertainty in uncertainty_words:
+        if uncertainty in answer_lower:
+            confidence_score -= 5
+    
+    # Calculate overall score
+    overall_score = (content_score + communication_score + confidence_score) / 3
+    
+    # Generate feedback
+    strengths = []
+    improvements = []
+    
+    if content_score >= 70:
+        strengths.append("Strong domain knowledge demonstrated")
+    if communication_score >= 70:
+        strengths.append("Clear and well-structured communication")
+    if confidence_score >= 70:
+        strengths.append("Shows confidence and conviction")
+    if word_count >= 50:
+        strengths.append("Detailed and comprehensive response")
+    
+    if content_score < 60:
+        improvements.append("Include more specific examples and technical details")
+    if communication_score < 60:
+        improvements.append("Structure your response better with clear points")
+    if confidence_score < 60:
+        improvements.append("Express more confidence in your abilities")
+    if word_count < 30:
+        improvements.append("Provide more elaborate answers")
+    
+    # Generate detailed feedback
+    if overall_score >= 80:
+        detailed_feedback = "Excellent response! You demonstrated strong knowledge and communication skills."
+    elif overall_score >= 65:
+        detailed_feedback = "Good response with room for improvement. Focus on the areas mentioned below."
+    elif overall_score >= 50:
+        detailed_feedback = "Average response. Work on providing more detailed and confident answers."
+    else:
+        detailed_feedback = "Response needs significant improvement. Practice more structured and detailed answers."
+    
+    feedback.update({
+        "overall_score": min(95, max(15, round(overall_score))),
+        "content_score": min(95, max(15, content_score)),
+        "communication_score": min(95, max(15, communication_score)),
+        "confidence_score": min(95, max(15, confidence_score)),
+        "strengths": strengths,
+        "improvements": improvements,
+        "detailed_feedback": detailed_feedback
+    })
+    
+    return feedback
+
+def generate_youtube_recommendations(user_skills, user_branch, weak_areas=None):
+    """
+    Generate personalized YouTube learning resources based on user profile
+    """
+    recommendations = []
+    
+    # Branch-specific YouTube channels and topics
+    branch_resources = {
+        "Computer Science": {
+            "channels": [
+                {"name": "freeCodeCamp.org", "url": "https://www.youtube.com/c/Freecodecamp"},
+                {"name": "Traversy Media", "url": "https://www.youtube.com/c/TraversyMedia"},
+                {"name": "The Net Ninja", "url": "https://www.youtube.com/c/TheNetNinja"},
+                {"name": "Coding Interview Pro", "url": "https://www.youtube.com/c/CodingInterviewPro"}
+            ],
+            "playlists": [
+                {"title": "Data Structures and Algorithms", "url": "https://www.youtube.com/playlist?list=PLgUwDviBIf0p4ozDR_kJJkONnb1wdx2Ma"},
+                {"title": "System Design Interview", "url": "https://www.youtube.com/playlist?list=PLMCXHnjXnTnvo6alSjVkgxV-VH6EPyvoX"},
+                {"title": "React.js Complete Course", "url": "https://www.youtube.com/watch?v=w7ejDZ8SWv8"}
+            ]
+        },
+        "Information Technology": {
+            "channels": [
+                {"name": "NetworkChuck", "url": "https://www.youtube.com/c/NetworkChuck"},
+                {"name": "Professor Messer", "url": "https://www.youtube.com/c/professormesser"},
+                {"name": "PowerCert Animated Videos", "url": "https://www.youtube.com/c/PowerCertAnimatedVideos"}
+            ],
+            "playlists": [
+                {"title": "CompTIA Network+ Course", "url": "https://www.youtube.com/playlist?list=PLG49S3nxzAnmpdmX7RoTOyuNJQAb-r-gd"},
+                {"title": "Cybersecurity Fundamentals", "url": "https://www.youtube.com/playlist?list=PLhfrWIlLOoKOc7f8weL0lJneygGF_C0Jf"}
+            ]
+        },
+        "Electronics": {
+            "channels": [
+                {"name": "EEVblog", "url": "https://www.youtube.com/c/EevblogDave"},
+                {"name": "GreatScott!", "url": "https://www.youtube.com/c/greatscottlab"},
+                {"name": "ElectroBOOM", "url": "https://www.youtube.com/c/Electroboom"}
+            ],
+            "playlists": [
+                {"title": "Arduino Tutorial Series", "url": "https://www.youtube.com/playlist?list=PLGs0VKk2DiYw-L-RibttcvK-WBZm8WLEP"},
+                {"title": "PCB Design Basics", "url": "https://www.youtube.com/playlist?list=PLXSyc11qLa1YhVCZ5Skxrf8CehnKT_2SV"}
+            ]
+        },
+        "Mechanical": {
+            "channels": [
+                {"name": "SolidWorks", "url": "https://www.youtube.com/c/SolidWorksOfficial"},
+                {"name": "TITANS of CNC", "url": "https://www.youtube.com/c/TITANSofCNC"},
+                {"name": "Learn Engineering", "url": "https://www.youtube.com/c/LearnEngineering"}
+            ],
+            "playlists": [
+                {"title": "SolidWorks Tutorials", "url": "https://www.youtube.com/playlist?list=PLym8blx7B-xPgW9mKE2FWW_pI0SX-J8-j"},
+                {"title": "Manufacturing Processes", "url": "https://www.youtube.com/playlist?list=PLuUdFsbOK_8pKOD8_xxjPN8eFJODNXBFV"}
+            ]
+        },
+        "Electrical": {
+            "channels": [
+                {"name": "ElectricalEngineeringXYZ", "url": "https://www.youtube.com/c/ElectricalEngineeringXYZ"},
+                {"name": "ALL ABOUT ELECTRONICS", "url": "https://www.youtube.com/c/ALLABOUTELECTRONICS"},
+                {"name": "Power System Lectures", "url": "https://www.youtube.com/c/PowerSystemLectures"}
+            ],
+            "playlists": [
+                {"title": "Power Systems Analysis", "url": "https://www.youtube.com/playlist?list=PLgMDNELGJ1CaXVfvR3n2CU41pKP8kxPKY"},
+                {"title": "Control Systems", "url": "https://www.youtube.com/playlist?list=PLUMWjy5jgHK1NC52DXXrriwihVrYZKqjk"}
+            ]
+        },
+        "Civil": {
+            "channels": [
+                {"name": "Civil Engineering X", "url": "https://www.youtube.com/c/CivilEngineeringX"},
+                {"name": "The Constructor", "url": "https://www.youtube.com/c/TheConstructor"},
+                {"name": "STAAD Pro Learning", "url": "https://www.youtube.com/c/STAADProLearning"}
+            ],
+            "playlists": [
+                {"title": "Structural Engineering", "url": "https://www.youtube.com/playlist?list=PLOAuB8dR35oeF_DRSB-wVbbFXHVq-oOL-"},
+                {"title": "AutoCAD Civil 3D", "url": "https://www.youtube.com/playlist?list=PLgMDNELGJ1CZe9XLpCgDMj_lVi7p5ACBh"}
+            ]
+        }
+    }
+    
+    # Skill-specific recommendations
+    skill_resources = {
+        "python": [
+            {"title": "Python Programming Tutorial", "url": "https://www.youtube.com/watch?v=_uQrJ0TkZlc", "duration": "6 hours"},
+            {"title": "Python Projects for Beginners", "url": "https://www.youtube.com/watch?v=8ext9G7xspg", "duration": "5 hours"}
+        ],
+        "javascript": [
+            {"title": "JavaScript Crash Course", "url": "https://www.youtube.com/watch?v=hdI2bqOjy3c", "duration": "1.5 hours"},
+            {"title": "JavaScript Projects", "url": "https://www.youtube.com/watch?v=3PHXvlpOkf4", "duration": "8 hours"}
+        ],
+        "react": [
+            {"title": "React Course for Beginners", "url": "https://www.youtube.com/watch?v=bMknfKXIFA8", "duration": "5 hours"},
+            {"title": "React Projects Tutorial", "url": "https://www.youtube.com/watch?v=a_7Z7C_JCyo", "duration": "12 hours"}
+        ],
+        "machine learning": [
+            {"title": "Machine Learning Course", "url": "https://www.youtube.com/watch?v=NWONeJKn6kc", "duration": "20 hours"},
+            {"title": "Python for Machine Learning", "url": "https://www.youtube.com/watch?v=7eh4d6sabA0", "duration": "4 hours"}
+        ]
+    }
+    
+    # Interview preparation resources
+    interview_prep = [
+        {"title": "Software Engineering Interview Prep", "url": "https://www.youtube.com/watch?v=KdXAUst8bdo", "duration": "2 hours"},
+        {"title": "HR Interview Questions and Answers", "url": "https://www.youtube.com/watch?v=naIkpQ_cIt0", "duration": "1 hour"},
+        {"title": "System Design Interview Questions", "url": "https://www.youtube.com/watch?v=UzLMhqg3_Wc", "duration": "3 hours"}
+    ]
+    
+    # Generate personalized recommendations
+    if user_branch in branch_resources:
+        recommendations.extend([
+            {
+                "category": f"{user_branch} Fundamentals",
+                "resources": branch_resources[user_branch]["channels"][:2] + branch_resources[user_branch]["playlists"][:2],
+                "priority": "high"
+            }
+        ])
+    
+    # Add skill-specific resources
+    skill_recommendations = []
+    for skill in user_skills[:5]:  # Top 5 skills
+        skill_key = skill.lower()
+        if skill_key in skill_resources:
+            skill_recommendations.extend(skill_resources[skill_key])
+    
+    if skill_recommendations:
+        recommendations.append({
+            "category": "Skill Enhancement",
+            "resources": skill_recommendations,
+            "priority": "medium"
+        })
+    
+    # Add interview preparation
+    recommendations.append({
+        "category": "Interview Preparation",
+        "resources": interview_prep,
+        "priority": "high"
+    })
+    
+    # Add weak areas improvement (if provided)
+    if weak_areas:
+        weak_area_resources = []
+        for area in weak_areas:
+            area_key = area.lower().replace(" ", "")
+            if area_key in skill_resources:
+                weak_area_resources.extend(skill_resources[area_key])
+        
+        if weak_area_resources:
+            recommendations.append({
+                "category": "Areas for Improvement",
+                "resources": weak_area_resources,
+                "priority": "high"
+            })
+    
+    return recommendations
 def extract_skills_from_linkedin(linkedin_data):
     """Extract skills from LinkedIn data"""
     skills = set()
