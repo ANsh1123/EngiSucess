@@ -292,6 +292,18 @@ const Companies = ({ user }) => {
       <div className="companies-header">
         <h1>🎯 Smart Company Matching</h1>
         <div className="header-actions">
+          <button 
+            className="btn-secondary"
+            onClick={() => setShowApplications(!showApplications)}
+          >
+            📋 My Applications ({myApplications.length})
+          </button>
+          <button 
+            className="btn-secondary"
+            onClick={() => setShowLearningResources(!showLearningResources)}
+          >
+            📚 Learning Resources
+          </button>
           {!matchingResults ? (
             <button 
               className="btn-primary"
