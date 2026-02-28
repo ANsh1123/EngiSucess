@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv('/app/frontend/.env')
 
 # Get backend URL from frontend environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://engisuccess.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://placement-prep-16.preview.emergentagent.com')
 API_BASE_URL = f"{BACKEND_URL}/api"
 
 print(f"Testing backend at: {API_BASE_URL}")
