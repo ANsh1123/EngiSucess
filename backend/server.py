@@ -265,7 +265,27 @@ COMPANY_DATA = [
         "work_environment": "Hybrid",
         "founded_year": 2015,
         "funding_stage": "Series B",
-        "description": "Leading software development company building innovative solutions for global clients"
+        "description": "Leading software development company building innovative solutions for global clients",
+        "job_links": {
+            "linkedin": "https://www.linkedin.com/jobs/search/?keywords=software%20developer&location=bangalore",
+            "indeed": "https://www.indeed.co.in/jobs?q=software+developer&l=bangalore",
+            "naukri": "https://www.naukri.com/software-developer-jobs-in-bangalore",
+            "company_careers": "https://techcorp.com/careers"
+        },
+        "active_openings": [
+            {
+                "title": "Software Developer - React/Node.js",
+                "experience": "0-2 years",
+                "apply_link": "https://www.linkedin.com/jobs/view/react-nodejs-developer",
+                "posted": "2 days ago"
+            },
+            {
+                "title": "Full Stack Developer Intern",
+                "experience": "Fresher",
+                "apply_link": "https://www.indeed.co.in/viewjob?jk=fullstack-intern",
+                "posted": "1 week ago"
+            }
+        ]
     },
     {
         "id": "comp_2", 
